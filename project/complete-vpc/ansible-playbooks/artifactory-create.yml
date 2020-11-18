@@ -1,0 +1,10 @@
+---
+# This playbook deploys a Nexus server.
+
+- hosts: artifactory-server
+  become: yes
+  become_method: sudo
+
+  roles:
+    - selinux
+    - artifactory

@@ -1,0 +1,123 @@
+---
+# Tasks for testing role
+
+- name: load docker presets
+  hosts: localhost
+  roles:
+    - role: amtega.docker_presets
+    - role: amtega.docker_sandbox
+      docker_sandbox_images: >-
+        {{ docker_presets_images
+           | selectattr("name", "search", "centos") | list }}
+      docker_sandbox_containers: >-
+        {{ docker_presets_containers
+           | selectattr("name", "search", "centos") | list }}
+      docker_sandbox_state: started
+
+- name: test epel repository install and enable
+  hosts: docker_sandbox_containers
+  roles:
+    - amtega.epel
+  vars:
+    epel_state: present
+
+    epel_enabled: 1
+    epel_debuginfo_enabled: 1
+    epel_source_enabled: 1
+
+    epel_testing_enabled: 1
+    epel_testing_debuginfo_enabled: 1
+    epel_testing_source_enabled: 1
+  tasks:
+    - name: check epel repository config file
+      stat:
+        path: "{{ epel_config_file }}"
+      register: check_epel_config_file_result
+
+    - name: check epel testing repository config file
+      stat:
+        path: "{{ epel_testing_config_file }}"
+      register: check_epel_testing_config_file_result
+
+    - name: check epel config files exist
+      assert:
+        that:
+          - check_epel_config_file_result.stat.exists
+          - check_epel_testing_config_file_result.stat.exists
+
+    - name: check that all epel repositories are enabled
+      command: >-
+        grep 'enabled=0'
+        {{ epel_config_file }}
+        {{ epel_testing_config_file }}
+      register: check_enabled_options
+      failed_when: >-
+        check_enabled_options.rc != 1
+        or check_enabled_options.stdout | length > 0
+      changed_when: false
+  tags:
+    - idempotence
+
+- name: test epel repository install and disable
+  hosts: docker_sandbox_containers
+  roles:
+    - amtega.epel
+  vars:
+    epel_state: present
+
+    epel_enabled: 0
+    epel_debuginfo_enabled: 0
+    epel_source_enabled: 0
+
+    epel_testing_enabled: 0
+    epel_testing_debuginfo_enabled: 0
+    epel_testing_source_enabled: 0
+  tasks:
+    - name: check that all epel repositories are disabled
+      command: >-
+        grep 'enabled=1'
+        {{ epel_config_file }}
+        {{ epel_testing_config_file }}
+      register: check_enabled_options
+      failed_when: >-
+        check_enabled_options.rc != 1
+        or check_enabled_options.stdout | length > 0
+      changed_when: false
+
+- name: test epel repository removal
+  hosts: docker_sandbox_containers
+  roles:
+    - amtega.epel
+  vars:
+    epel_state: absent
+  tasks:
+    - name: check epel repository config file
+      stat:
+        path: "{{ epel_config_file }}"
+      register: check_epel_config_file_result
+
+    - name: check epel testing repository config file
+      stat:
+        path: "{{ epel_testing_config_file }}"
+      register: check_epel_testing_config_file_result
+
+    - name: check epel config files exist
+      assert:
+        that:
+          - not check_epel_config_file_result.stat.exists
+          - not check_epel_testing_config_file_result.stat.exists
+
+    - name: check that all epel packages were removed
+      shell: >-
+        yum list installed epel* | grep epel
+      args:
+        warn: false
+      register: check_packages
+      failed_when: check_packages.stdout | length > 0
+      changed_when: false
+
+- name: cleanup docker docker sandbox
+  hosts: localhost
+  roles:
+    - role: amtega.docker_sandbox
+      docker_sandbox_state: absent

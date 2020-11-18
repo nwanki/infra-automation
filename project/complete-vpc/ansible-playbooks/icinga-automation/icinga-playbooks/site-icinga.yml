@@ -1,0 +1,47 @@
+---
+- hosts: monitoring_servers
+  become: yes
+  become_method: sudo
+
+  roles:
+     ## Please note: this role is not included and it is listed here for clarity only
+   - role: epel
+     tags: epel
+
+     ## Please note: this role is not included and it is listed here for clarity only
+   - role: mariadb
+     mariadb_yum_repos: |
+       [MariaDB]
+       name=MariaDB
+       baseurl=http://yum.mariadb.org/5.5/centos6-amd64
+       gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+       gpgcheck=1
+     tags: mariadb
+
+   - role: icinga2-ansible-no-ui
+     icinga2_conf_global: |
+       include "constants.conf"
+       include "zones.conf"
+       include <itl>
+       include <plugins>
+       include "features-enabled/*.conf"
+       include_recursive "conf.d"
+     check_commands:
+       check_nrpe: |
+          "-H", "$address$",
+              "-c", "$remote_nrpe_command$",
+     tags: icinga2-no-ui
+
+   - role: icinga2-ansible-web2-ui
+     icinga2_db_pass: "icingaweb"
+     icinga2_web2_db_pass: "icingaweb"
+     icinga2_ido_mysql_configuration: |
+       library "db_ido_mysql"
+
+       object IdoMysqlConnection "ido-mysql" {
+         user = "{{ icinga2_db_user }}"
+         password = "{{ icinga2_db_pass }}"
+         host = "localhost"
+         database = "{{ icinga2_db }}"
+       }
+     tags: icinga2-ansible-web2-ui

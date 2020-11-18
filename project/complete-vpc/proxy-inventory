@@ -1,0 +1,2 @@
+[proxy-server]
+18.218.189.132 ansible_connection=ssh ansible_ssh_user=ubuntu ansible_ssh_private_key_file=mgmt-vpc-key ansible_ssh_common_args='-o StrictHostKeyChecking=no'

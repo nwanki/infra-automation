@@ -1,0 +1,7 @@
+---
+- name: install mariadb packages
+  yum: >-
+    name={{ item }}
+    state=installed
+  with_items: "{{ mariadb_packages }}"
+  register: mariadb_install_packages

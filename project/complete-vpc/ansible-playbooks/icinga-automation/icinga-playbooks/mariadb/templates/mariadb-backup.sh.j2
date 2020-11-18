@@ -1,0 +1,78 @@
+#!/bin/bash
+
+BACKUP_DIR="{{ mariadb_backup_dir }}"
+BACKUP_AGE="{{ mariadb_backup_age }}"
+BACKUP_OPTS="{{ mariadb_backup_opts }}"
+BACKUP_COMPRESSION="{{ mariadb_backup_compression }}"
+
+DATE=$(date '+%Y%m%d-%H%M')
+
+function __age_backups() {
+    find ${BACKUP_DIR} -mtime ${BACKUP_AGE} -name ${HOSTNAME}-*.sql.gz -exec rm -f {} \;
+}
+
+function __db_backup() {
+    local __name=$1
+    if [ ! -d ${BACKUP_DIR} ]; then
+        mkdir -p ${BACKUP_DIR} || return 2
+    fi
+
+    case "$BACKUP_COMPRESSION" in
+        gzip)
+            _suffix=".gz"
+            ;;
+        bzip*)
+            _suffix=".bz2"
+            ;;
+        xz)
+            _suffix=".xz"
+            ;;
+        *)
+            _suffix=""
+            ;;
+    esac
+    
+    mysqldump ${BACKUP_OPTS} ${__name} | \
+        ${BACKUP_COMPRESSION} > ${BACKUP_DIR}/${HOSTNAME}-${__name}-${DATE}.sql${_suffix}
+}
+
+function __backup_all_dbs() {
+    local __db="mysql"
+    mysql -NBe 'show databases' | \
+        while read __db ; do
+            __db_backup ${__db}
+        done
+}
+
+function __usage() {
+    cat <<EOF
+usage $0: [-h|-n <db>]
+      Script to backup MariaDB databases
+      -h        Display this message
+      -n <db>   Back up a specific database
+EOF
+}
+
+while getopts "hn:" OPT; do
+    case $OPT in
+        h)
+            __usage
+            exit 0
+            ;;
+        n)
+            NAME="${OPTARG}"
+            ;;
+        *)
+            echo "Unknown option."
+            __usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ -n "${NAME}" ]; then
+    __db_backup ${NAME}
+else
+    __backup_all_dbs
+fi
+__age_backups

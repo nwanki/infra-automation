@@ -1,0 +1,43 @@
+---
+- name: get list of anonymous users
+  command: >-
+    mysql -NBe 'SELECT Host FROM mysql.user WHERE User = ""'
+  register: mariadb_anonymous_users
+  changed_when: false
+
+- name: remove anonymous users
+  mysql_user: >-
+    name=""
+    host={{ item }}
+    state=absent
+  with_items: "{{ mariadb_anonymous_users.stdout_lines }}"
+
+- name: remove test database
+  mysql_db: name=test state=absent
+
+- name: disable root login remotely
+  command: >-
+    mysql -NBe
+    'DELETE FROM mysql.user WHERE User = "root" AND Host NOT IN ("localhost", "127.0.0.1", "::1");'
+  changed_when: False
+
+- name: get list of hosts for root user
+  command: >-
+    mysql -NBe 'SELECT Host FROM mysql.user WHERE User = "root" ORDER BY (Host="localhost") ASC;'
+  register: mariadb_root_hosts
+  changed_when: False
+
+- name: set mysql root password for localhost root account
+  command: >-
+    mysql -u root -NBe
+    'SET PASSWORD FOR "{{ mariadb_root_username }}"@"{{ item }}" = PASSWORD("{{mariadb_root_password}}");'
+  with_items: "{{ mariadb_root_hosts.stdout_lines }}"
+  when: mariadb_install_packages.changed
+
+- name: template my.cnf for root user account
+  template: >-
+    src=user-my.cnf.j2
+    dest={{ mariadb_root_home }}/.my.cnf
+    owner=root
+    group=root
+    mode=0600

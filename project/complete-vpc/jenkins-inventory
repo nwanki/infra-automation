@@ -1,0 +1,2 @@
+[jenkins-server]
+3.14.134.57 ansible_connection=ssh ansible_ssh_user=centos ansible_ssh_private_key_file=mgmt-vpc-key ansible_ssh_common_args='-o StrictHostKeyChecking=no'

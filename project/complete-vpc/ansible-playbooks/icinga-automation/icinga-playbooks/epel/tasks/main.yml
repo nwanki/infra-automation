@@ -1,0 +1,6 @@
+---
+
+- name: installing epel release
+  yum:
+    name: epel-release
+    state: latest

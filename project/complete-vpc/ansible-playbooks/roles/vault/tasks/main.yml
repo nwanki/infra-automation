@@ -1,0 +1,37 @@
+---
+- name: Install unzip
+  yum: name=unzip state=present
+
+- name: Download Tomcat
+  get_url: url=https://releases.hashicorp.com/vault/1.4.0/vault_1.4.0_linux_amd64.zip dest=/tmp/vault_1.4.0_linux_amd64.zip
+
+- name: Extract archive
+  command: chdir=/usr/bin unzip /tmp/vault_1.4.0_linux_amd64.zip creates=/usr/bin/vault
+
+- name: Create a etc vault directory if it does not exist
+  file:
+    path: /etc/vault
+    state: directory
+
+- name: Create a opt vault-data directory if it does not exist
+  file:
+    path: /opt/vault-data
+    state: directory
+
+- name: Create a vault logs directory if it does not exist
+  file:
+    path: /logs/vault
+    recurse: yes
+    state: directory
+
+- name: Configure vault
+  template: src=config.json dest=/etc/vault/config.json
+  notify: restart vault
+
+- name: Configure vault service
+  template: src=vault.service dest=/etc/systemd/system/vault.service mode=755
+  notify: restart vault
+
+- name: Start vault
+  service: name=vault state=started enabled=yes
+

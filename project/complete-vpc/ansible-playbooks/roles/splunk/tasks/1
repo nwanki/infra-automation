@@ -1,0 +1,39 @@
+---
+
+- name: Coping splunk software zip
+  copy: 
+    src: splunk-7.2.4-8a94541dcfac-Linux-x86_64.tgz
+    dest: /opt
+    mode: 0644
+
+- name: Extracting splunk zip file to /opt
+  unarchive: 
+    dest: /opt 
+    src: /opt/splunk-7.2.4-8a94541dcfac-Linux-x86_64.tgz
+    creates: /opt/splunk
+    copy: no
+
+- name: Copying the splunk user-seed.conf 
+  template: 
+    src: user-seed.conf
+    dest: /opt/splunk/etc/system/local/user-seed.conf
+
+- name: Add group "splunk"
+  group: 
+    name: splunk
+
+- name: Add user "splunk"
+  user: 
+    name: splunk
+    group: splunk 
+    home: /opt/splunk
+
+- name: Change ownership of splunk installation
+  file: 
+    path: /opt/splunk
+    owner: splunk
+    group: splunk
+    state: directory 
+    recurse: yes
+
+

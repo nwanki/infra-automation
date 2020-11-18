@@ -1,0 +1,40 @@
+---
+# Configuration tasks
+
+- name: configure epel repositories
+  ini_file:
+    path: "{{ item.path }}"
+    section: "{{ item.section }}"
+    option: "enabled"
+    value: "{{ item.enabled }}"
+    no_extra_spaces: true
+  with_items:
+    - section: "epel"
+      enabled: "{{ epel_enabled }}"
+      path: "{{ epel_config_file }}"
+
+    - section: "epel-debuginfo"
+      enabled: "{{ epel_debuginfo_enabled }}"
+      path: "{{ epel_config_file }}"
+
+    - section: "epel-source"
+      enabled: "{{ epel_source_enabled }}"
+      path: "{{ epel_config_file }}"
+
+    - section: "epel-testing"
+      enabled: "{{ epel_testing_enabled }}"
+      path: "{{ epel_testing_config_file }}"
+
+    - section: "epel-testing-debuginfo"
+      enabled: "{{ epel_testing_debuginfo_enabled }}"
+      path: "{{ epel_testing_config_file }}"
+
+    - section: "epel-testing-source"
+      enabled: "{{ epel_testing_source_enabled }}"
+      path: "{{ epel_testing_config_file }}"
+  when: epel_state=="present"
+  loop_control:
+    label: "{{ item.section }}"
+  tags:
+    - role::epel
+    - role::epel::configure

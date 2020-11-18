@@ -1,0 +1,38 @@
+---
+  # Contact all the monitored hosts to gather facts
+- hosts: all
+  gather_facts: True
+  become: yes
+  become_method: sudo
+
+  # Contact all the monitoring servers to copy host definitions
+- hosts: monitoring_servers
+  become: yes
+  become_method: sudo
+  roles:
+
+   - role: icinga2-ansible-add-hosts
+     configuration_logic: "object"
+     host_attributes: |
+       check_command = "http"
+       vars.sla = "24x7"
+       vars.operator = "on_call"
+     host_checks: |
+       object Service "load_average" {
+         host_name = "{{ hostvars[item]['ansible_fqdn'] }}"
+         check_command = "check_nrpe"
+         vars.remote_nrpe_command = "check_load"
+       }
+
+       object Service "disk" {
+         host_name = "{{ hostvars[item]['ansible_fqdn'] }}"
+         check_command = "check_nrpe"
+         vars.remote_nrpe_command = "check_disk"
+       }
+
+       object Service "http" {
+         host_name = "{{ hostvars[item]['ansible_fqdn'] }}"
+         check_command = "http"
+         vars.http_vhost = "{{ hostvars[item]['ansible_domain'] }}"
+       }
+     tags: add-hosts

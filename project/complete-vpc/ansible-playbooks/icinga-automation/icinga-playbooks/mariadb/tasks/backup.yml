@@ -1,0 +1,18 @@
+---
+
+- name: deploy backup script
+  template: >-
+    src=mariadb-backup.sh.j2
+    dest={{ mariadb_backup_install_path }}/mariadb-backup
+    owner=root
+    group=root
+    mode=0755
+
+- name: create cron job for backups
+  cron: >-
+    name="mariadb backups"
+    hour=6
+    minute=5
+    user="root"
+    job="{{ mariadb_backup_install_path }}/mariadb-backup"
+    cron_file="ansible-mariadb-backup"

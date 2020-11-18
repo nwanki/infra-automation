@@ -1,0 +1,20 @@
+---
+# Role dependencies
+
+galaxy_info:
+  author: Juan Antonio Valiño García
+  description: Setup epel repository
+  company: AMTEGA - Xunta de Galicia
+  license: GPLv3 or EUPL
+  min_ansible_version: 2.4
+  platforms:
+  - name: EL
+    versions:
+      - 6
+      - 7
+  galaxy_tags:
+    - system
+    - yum
+    - dnf
+
+dependencies: []

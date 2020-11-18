@@ -1,0 +1,21 @@
+---
+- name: Install tinyproxy
+  apt:
+    name: tinyproxy
+    update_cache: yes
+    state: present
+
+- name: Copy tinyproxy.conf file
+  template:
+    src: tinyproxy.conf.j2
+    dest: /etc/tinyproxy/tinyproxy.conf 
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Start and enable tinyproxy
+  service:
+    name: tinyproxy
+    state: started
+    enabled: yes
+

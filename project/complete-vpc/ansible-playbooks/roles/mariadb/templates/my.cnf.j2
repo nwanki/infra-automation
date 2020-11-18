@@ -1,0 +1,57 @@
+# ansible managed
+[client]
+port   = {{ mariadb_port }}
+socket = {{ mariadb_socket }}
+
+[mysqld]
+port           = {{ mariadb_port         }}
+bind-address   = {{ mariadb_bind_address }}
+datadir        = {{ mariadb_datadir      }}
+socket         = {{ mariadb_socket       }}
+pid-file       = {{ mariadb_pid_file     }}
+symbolic-links = 0
+
+{% if mariadb_log_slow_queries_enabled %}
+slow_query_log = 1
+slow_query_log_file = {{ mariadb_slow_query_log_file }}
+long_query_time = {{ mariadb_long_query_time }}
+{% endif %}
+
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links = 0
+
+# User is ignored when systemd is used (fedora >= 15).
+user               = {{ mariadb_owner }}
+performance_schema = on
+max-connections    = {{ mariadb_max_connections }}
+
+# innodb
+innodb_file_per_table           = {{ mariadb_innodb_file_per_table           }}
+innodb_buffer_pool_size         = {{ mariadb_innodb_buffer_pool_size         }}
+innodb_additional_mem_pool_size = {{ mariadb_innodb_additional_mem_pool_size }}
+innodb_log_file_size            = {{ mariadb_innodb_log_file_size            }}
+innodb_log_buffer_size          = {{ mariadb_innodb_log_buffer_size          }}
+innodb_flush_log_at_trx_commit  = {{ mariadb_innodb_flush_log_at_trx_commit  }}
+innodb_lock_wait_timeout        = {{ mariadb_innodb_lock_wait_timeout        }}
+
+{% if mariadb_replication_role == 'master' %}
+# replication
+log_bin          = on
+log_bin_index    = mysql-bin.index                         
+expire_logs_days = {{ mariadb_expire_logs_days }}
+max_binlog_size  = {{ mariadb_max_binlog_size  }}
+
+{% for db in mariadb_databases %}
+{% if db.replicate|default(1) %}
+binlog_do_db     = {{ db.name }}
+{% else %}
+binlog_ignore_db = {{ db.name }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+[mysqld_safe]
+log-error = {{ mariadb_log_error }}
+pid-file  = {{ mariadb_pid_file  }}
+
+!includedir {{ mariadb_conf_include_dir }}

@@ -1,0 +1,8 @@
+---
+mariadb_packages:
+  - mariadb
+  - mariadb-server
+  - MySQL-python
+mariadb_conf_path_default: /etc/my.cnf
+mariadb_conf_include_dir_default: /etc/my.cnf.d
+mariadb_slow_query_log_file_default: /var/log/mariadb/mariadb_slow.log

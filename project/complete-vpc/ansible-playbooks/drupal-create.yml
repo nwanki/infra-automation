@@ -1,0 +1,12 @@
+---
+# This playbook deploys a simple standalone Tomcat 7 server.
+
+- hosts: drupal-server
+  remote_user: vagrant
+  become: yes
+  become_method: sudo
+
+  roles:
+    - selinux
+    - mariadb
+    - drupal

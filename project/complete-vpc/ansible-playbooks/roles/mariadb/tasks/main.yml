@@ -1,0 +1,66 @@
+---
+- name: include os-specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- include: setup-redhat.yml
+  when: ansible_os_family == "RedHat"
+
+- name: deploy global my.cnf
+  template: >-
+    src=my.cnf.j2
+    dest={{ mariadb_conf_path }}
+    owner=root
+    group=root
+    mode=0644
+  notify: restart mariadb
+
+- name: create mariadb configuration include directory
+  file: >-
+    path={{ mariadb_conf_include_dir }}
+    state=directory
+    owner=root
+    group=root
+    mode=0755
+
+- name: create slow query log file
+  when: mariadb_log_slow_queries_enabled
+  command: >-
+    creates={{ mariadb_slow_query_log_file }}
+    touch {{ mariadb_slow_query_log_file }}
+
+- name: set slow query log permissions
+  when: mariadb_log_slow_queries_enabled
+  file: >-
+    path={{ mariadb_slow_query_log_file }}
+    state=file
+    owner={{ mariadb_owner }}
+    group={{ mariadb_owner }}
+    mode=0644
+
+- name: deploy backup script
+  template: >-
+    src=mariadb-backup.sh.j2
+    dest={{ mariadb_backup_install_path }}/mariadb-backup
+    owner=root
+    group=root
+    mode=0755
+  when: mariadb_do_backup
+
+- name: create cron job for backups
+  cron: >-
+    name="mariadb backups"
+    hour=6
+    minute=5
+    user="root"
+    job="{{ mariadb_backup_install_path }}/mariadb-backup"
+    cron_file="ansible-mariadb-backup"
+  when: mariadb_do_backup
+
+- name: enable and start mariadb
+  service: name=mariadb enabled=yes state=started
+
+- include: secure-install.yml
+
+- include: databases.yml
+
+- include: replication.yml

@@ -1,0 +1,6 @@
+---
+- name: restart nexus
+  service: name=nexus state=restarted
+
+- name: restart iptables
+  service: name=iptables state=restarted

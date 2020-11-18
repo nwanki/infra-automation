@@ -1,0 +1,12 @@
+---
+- name: Setting up timezone
+  command: timedatectl set-timezone America/New_York
+
+- name installing required packages
+  yum:
+    name: {{ item }}
+    state: present
+  with_item:
+    - epel-release
+    - httpd
+    - nagios-plugins-all

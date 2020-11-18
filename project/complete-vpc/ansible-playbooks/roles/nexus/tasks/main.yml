@@ -1,0 +1,46 @@
+---
+
+- name: Install Wget 
+  yum: name=wget state=present 
+
+- name: add group "Nexus"
+  group: name=nexus
+
+- name: add user "nexus"
+  user: name=nexus group=nexus home=/opt/nexus createhome=no
+  become: True
+  become_method: sudo
+
+- name: Download Nexus
+  get_url:
+    url: http://download.sonatype.com/nexus/3/latest-unix.tar.gz
+    dest: /opt/
+
+- name: Extract Nexus archive
+  command: chdir=/opt /bin/tar xvf /opt/nexus-3.28.1-01-unix.tar.gz -C /opt/ creates=/opt/nexus-3.28.1-01
+
+- name: Nexus symlink install directory 
+  file: src=/opt/nexus-3.28.1-01 path=/opt/nexus state=link
+
+- name: Change ownership of Nexus installation
+  file: path=/opt/nexus-3.28.1-01 owner=nexus group=nexus state=directory recurse=yes
+
+- name: Change ownership of sonatype-work installation
+  file: path=/opt/sonatype-work owner=nexus group=nexus state=directory recurse=yes
+
+- name: Configure Nexus server
+  template: src=nexus.rc dest=/opt/nexus/bin/ owner=nexus group=nexus
+  notify: restart nexus
+
+- name: Setting Nexus memory
+  template: src=nexus.vmoptions dest=/opt/nexus/bin/nexus.vmoptions owner=nexus group=nexus
+  notify: restart nexus
+
+- name: Nexus symlink binary 
+  file: src=/opt/nexus/bin/nexus path=/etc/init.d/nexus state=link
+
+- name: Start Nexus
+  service: name=nexus state=started enabled=yes
+
+- name: wait for nexus to start
+  wait_for: port={{nexus_port}}

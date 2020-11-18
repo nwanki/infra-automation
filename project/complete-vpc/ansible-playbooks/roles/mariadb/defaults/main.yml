@@ -1,0 +1,48 @@
+---
+mariadb_owner: mysql
+mariadb_conf_path: "{{ mariadb_conf_path_default }}"
+mariadb_conf_include_dir: "{{ mariadb_conf_include_dir_default }}"
+mariadb_do_backup: no
+mariadb_backup_age: 14
+mariadb_backup_dir: /var/backup
+mariadb_backup_compression: gzip
+mariadb_backup_opts: "--single-transaction"
+mariadb_backup_install_path: /usr/local/bin
+#
+mariadb_root_username: root
+mariadb_root_password: root
+mariadb_root_home: /root
+#
+# mariadb configuration
+mariadb_port: "3306"
+mariadb_bind_address: "0.0.0.0"
+mariadb_datadir: /var/lib/mysql
+mariadb_pid_file: /var/run/mariadb/mariadb.pid
+mariadb_socket: /var/lib/mysql/mysql.sock
+mariadb_log_error: /var/log/mariadb/mariadb.log
+mariadb_max_connections: 151
+#
+# innodb
+mariadb_innodb_file_per_table: "1"
+mariadb_innodb_buffer_pool_size: "512M"
+mariadb_innodb_additional_mem_pool_size: "20M"
+mariadb_innodb_log_file_size: "64M"
+mariadb_innodb_log_buffer_size: "8M"
+mariadb_innodb_flush_log_at_trx_commit: "1"
+mariadb_innodb_lock_wait_timeout: 50
+#
+# slow query log
+mariadb_log_slow_queries_enabled: yes
+mariadb_slow_query_log_file: "{{ mariadb_slow_query_log_file_default }}"
+mariadb_long_query_time: "2"
+#
+# replication
+mariadb_server_id: "1"
+mariadb_max_binlog_size: "100M"
+mariadb_expire_logs_days: "10"
+mariadb_replication_role: ""
+mariadb_replication_user: {}
+mariadb_replication_master: ""
+#
+mariadb_users: []
+mariadb_databases: []

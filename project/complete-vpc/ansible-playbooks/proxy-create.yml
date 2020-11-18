@@ -1,0 +1,8 @@
+---
+- hosts: proxy-server 
+  become: yes
+  become_method: sudo
+
+  roles:
+    - tinyproxy
+

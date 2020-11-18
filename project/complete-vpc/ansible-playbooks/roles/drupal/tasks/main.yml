@@ -1,0 +1,65 @@
+---
+
+- name: Install Wget 
+  yum: name=wget state=present 
+
+- name: Install httpd
+  yum: name=httpd state=present 
+
+- name: Start httpd
+  service: name=httpd state=started enabled=yes
+
+- name: Downloading drupal
+  get_url: url=https://ftp.drupal.org/files/projects/drupal-8.2.6.tar.gz dest=/tmp/drupal-8.2.6.tar.gz
+
+- name: Installing php repo
+  command: "rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm"
+  ignore_errors: yes
+
+- name: Install php7 and some basic dependencies
+  yum: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+   - unzip
+   - php70w
+   - php70w-opcache
+   - php70w-mbstring
+   - php70w-gd
+   - php70w-xml
+   - php70w-pear
+   - php70w-fpm
+   - php70w-mysql
+   - php70w-pdo
+   - gzip
+
+- name: Extract archive
+  unarchive: 
+    dest: /var/www/html
+    src: /tmp/drupal-8.2.6.tar.gz
+    creates: /var/www/html/drupal 
+    copy: no 
+
+- name: Creating settings.php
+  command: /bin/cp /var/www/html/drupal-8.2.6/sites/default/default.settings.php /var/www/html/drupal-8.2.6/sites/default/settings.php creates=/var/www/html/drupal
+
+- name: Rename install directory
+  command: chdir=/var/www/html /bin/mv drupal-8.2.6 drupal creates=/var/www/html/drupal
+
+- name: Change ownership of drupal installation
+  file: 
+    path: /var/www/html/drupal
+    owner: apache
+    group: apache
+    state: directory 
+    recurse: yes
+
+- name: Copying httpd configuration file
+  template: 
+    src: drupal-httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+  notify: restart httpd
+
+- name: SELinux rule
+  command: chcon -R -t httpd_sys_content_rw_t /var/www/html/drupal/sites/
+

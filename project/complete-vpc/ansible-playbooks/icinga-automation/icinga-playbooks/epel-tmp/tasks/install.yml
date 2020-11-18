@@ -1,0 +1,13 @@
+---
+# Install tasks
+
+- name: setup epel repository package
+  package:
+    name: >-
+      {{ (epel_state == 'present')
+         | ternary(epel_url, 'epel-release') }}
+    state: "{{ epel_state }}"
+  tags:
+    - role::epel
+    - role::epel::packages
+    - role::epel::install

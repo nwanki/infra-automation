@@ -1,0 +1,16 @@
+---
+# Role default lower priority variables
+
+# Repository state (present /absent)
+
+epel_state: present
+
+# Enable or disable EPEL repositories
+
+epel_enabled: 1
+epel_debuginfo_enabled: 0
+epel_source_enabled: 0
+
+epel_testing_enabled: 0
+epel_testing_debuginfo_enabled: 0
+epel_testing_source_enabled: 0

@@ -1,0 +1,12 @@
+---
+# This playbook deploys a Nexus server.
+
+- hosts: nexus-server
+  remote_user: root
+  become: yes
+  become_method: sudo
+
+  roles:
+    - selinux
+    - JDK
+    - nexus

@@ -1,0 +1,16 @@
+---
+# handlers file for icinga2-ansible-web2-ui
+- name: restart icinga2
+  service: name=icinga2
+           state=restarted
+           enabled=yes
+
+- name: restart apache2
+  service: name=apache2
+           state=restarted
+           enabled=yes
+
+- name: restart rh-php71-php-fpm
+  service: name=rh-php71-php-fpm
+           state=restarted
+           enabled=yes

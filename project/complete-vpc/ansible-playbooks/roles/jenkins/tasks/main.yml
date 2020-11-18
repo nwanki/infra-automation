@@ -1,0 +1,85 @@
+---
+
+- name: Install Wget 
+  yum: name=wget state=present 
+
+- name: Install git
+  yum: name=git state=present 
+
+- name: Installing nagios agent
+  yum:
+    name: ['epel-release', 'nrpe', 'nagios-plugins']
+    state: present
+
+- name: Download jenkins Repo
+  get_url: 
+    url: "https://pkg.jenkins.io/redhat-stable/jenkins.repo"
+    dest: "/etc/yum.repos.d/jenkins.repo"
+
+- name: Installing jenkins key
+  command: "rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key"
+
+- name: Maven custom repo enable
+  template: src=maven-repo-enable dest=/etc/yum.repos.d/epel-apache-maven.repo
+  
+- name: Copy nrpe cfg
+  template: src=nrpe.cfg dest=/etc/nagios/nrpe.cfg
+
+- name: Install apache-maven
+  yum: name=apache-maven state=present
+
+- name: Configuring docker repo
+  shell: 'yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo'
+
+- name: Install Docker
+  yum: 
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+    state: present
+
+- name: Adding jenkins user to docker group
+  user:
+    name: 'jenkins'
+    groups: docker
+    append: yes
+
+- name: Maven custom repo diable
+  template: src=maven-repo-disable dest=/etc/yum.repos.d/epel-apache-maven.repo
+
+#- name: Download Maven
+#  get_url:
+#    url: http://www-eu.apache.org/dist/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz
+#    dest: /opt/
+
+#- name: Extract Maven archive
+#  command: chdir=/opt /bin/tar xvf /opt/apache-maven-3.5.2-bin.tar.gz -C /opt/ creates=/opt/apache-maven-3.5.2
+
+#- name: Maven symlink install directory 
+#  file: src=/opt/apache-maven-3.5.2 path=/usr/local/maven state=link
+
+#- name: Maven symlink binary 
+#  file: src=/usr/local/maven/bin/mvn path=/usr/local/bin/mvn state=link
+
+- name: Install Jenkins
+  yum: name=jenkins state=present
+
+- name: Start jenkins
+  service: name=jenkins state=started enabled=yes
+
+- name: Start nrpe agent
+  service: name=nrpe state=started enabled=yes
+
+- name: Start Docker
+  service: name=docker state=started enabled=yes
+
+- name: wait for jenkins to start
+  wait_for: port={{http_port}}
+
+- name: Hitting curl to generate one time key
+  shell: 'curl -L http://localhost:8080/'
+
+- name: getting jenkins one time key
+  shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+  register: jenkins_one_time_password
+  ignore_errors: True
+
+- debug: msg={{ jenkins_one_time_password.stdout_lines }}

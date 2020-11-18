@@ -1,0 +1,12 @@
+---
+mariadb_packages:
+  - mariadb-client
+  - mariadb-server
+  - python-mysqldb
+mariadb_conf_path_default: /etc/mysql/mariadb.cnf
+mariadb_conf_include_dir_default: /etc/mysql/mariadb.conf.d
+mariadb_slow_query_log_file_default: /var/log/mysql/mariadb_slow.log
+mariadb_datadir_default: /var/lib/mysql
+mariadb_pid_file_default: /var/run/mysqld/mysqld.pid
+mariadb_socket_default: /var/run/mysqld/mysqld.sock
+mariadb_log_error_default: /var/log/mysql/error.log

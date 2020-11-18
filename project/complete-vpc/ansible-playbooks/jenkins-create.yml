@@ -1,0 +1,13 @@
+---
+# This playbook deploys a simple standalone Tomcat 7 server.
+
+- hosts: jenkins-server
+  remote_user: root
+  become: yes
+  become_method: sudo
+
+  roles:
+    - selinux
+    - JDK
+    - jenkins
+    - vault
