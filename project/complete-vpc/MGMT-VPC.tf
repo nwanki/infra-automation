@@ -16,7 +16,7 @@ module "MGMT-VPC" {
   webserver_AMIS = "ami-02bcbb802e03574ba"
   appserver_AMIS = "ami-02bcbb802e03574ba"
   dbserver_AMIS = "ami-02bcbb802e03574ba"
-  bastionserver_AMIS = "ami-02bcbb802e03574ba"
+  bastionserver_AMIS = "ami-056f139b85f494248"
   jenkinsserver_AMIS = "ami-0f2b4fc905b0bd1f1"
   nexusserver_AMIS = "ami-0b500ef59d8335eee"
   artifactoryserver_AMIS = "ami-0b500ef59d8335eee"
