@@ -400,19 +400,19 @@ resource "aws_security_group" "capacitybay-secgrp" {
     from_port = "9000"
     to_port = "9000"
     protocol = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    cidr_blocks = [ "10.10.0.0/16" ]
   }
   ingress {
     from_port = "8081"
     to_port = "8081"
     protocol = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    cidr_blocks = [ "10.10.0.0/16" ]
   }
   ingress {
     from_port = "8080"
     to_port = "8080"
     protocol = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    cidr_blocks = [ "10.10.0.0/16" ]
   }
   ingress {
     from_port = "80"
@@ -424,11 +424,17 @@ resource "aws_security_group" "capacitybay-secgrp" {
     from_port = "8200"
     to_port = "8200"
     protocol = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    cidr_blocks = [ "10.10.0.0/16" ]
   }
   ingress {
     from_port = "22"
     to_port = "22"
+    protocol = "tcp"
+    cidr_blocks = [ "10.10.0.0/16" ]
+  }
+ ingress {
+    from_port = "3389"
+    to_port = "3389"
     protocol = "tcp"
     cidr_blocks = [ "0.0.0.0/0" ]
   }
